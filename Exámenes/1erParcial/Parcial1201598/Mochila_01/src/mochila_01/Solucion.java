@@ -18,18 +18,4 @@ public class Solucion {
         this.valorTot = valorTot;
         this.pesoTot = pesoTot;
     }
-    
-    //Checa si el binario es una reflexión sobre el eje verical 
-   public boolean esEquivalente(Solucion sol){
-        boolean res=true;
-        int i, n;
-         
-        n = strComb.length();
-        i=0;
-        while(i<(n/2) && strComb.charAt(i)==sol.strComb.charAt(n-1-i))
-            i++;
-        if(i<(n/2))
-            res=false;
-        return res;
-    }
 }

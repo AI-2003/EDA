@@ -28,8 +28,7 @@ public class Mochila_01
                                         double[] pesos,
                                         double[] valores, 
                                         double PESO_MIN,double PESO_MAX,
-                                        double VAL_MIN, double VAL_MAX, 
-                                        int start)
+                                        double VAL_MIN, double VAL_MAX)
     {
         
         
@@ -38,7 +37,7 @@ public class Mochila_01
         double deltaV = VAL_MAX  - VAL_MIN;
         
         int k;
-        for( k = start; k < start+N; k++)
+        for( k = 0; k < N; k++)
         {
             pesos[k]   = PESO_MIN + deltaP * rnd.nextDouble();
             valores[k] = VAL_MIN  + deltaV * rnd.nextDouble();
@@ -64,8 +63,7 @@ public class Mochila_01
     private static void imprimeInstrucciones(){
         System.out.println("Uso: ");
         System.out.println("Caso 1: java -jar Mochila_01.jar Ej1 SEMILLA");
-        System.out.println("Caso 2: java -jar Mochila_01.jar Ej2 RepeticionesPorArtículo SEMILLA");
-        System.out.println("El valor de RepeticionesPorArtículo debe ser 0, 1 o 2");
+        System.out.println("Caso 2: java -jar Mochila_01.jar Ej2 SEMILLA");
         System.out.println("En ambos casos el argumento SEMILLA es opcional");
     }
     
@@ -105,22 +103,21 @@ public class Mochila_01
         int topSols;
         int i;
         Solucion[] sols;
-        int nVeces = 1; // Cuantas veces puede estar presente cada artículo
-        int argSemilla = 1; // En qué lugar de los args está la semilla
         boolean validArgs = false;
         double t0, t1;
         
+        
+        //Deafult
+        base  = 2;
+        
+        
         //Checamos argumentos
         if (args.length > 0){
-            if(args[0].equals("Ej1") && args.length<=2)
+            if(args[0].equals("Ej1"))
                 validArgs=true;
-            if(args[0].equals("Ej2") && args.length<=3){
-                argSemilla = 2;
-                if(args.length > 1){
-                    nVeces = Integer.parseInt(args[1]);
-                    if(nVeces>=0 && nVeces<=2)
-                        validArgs = true;
-                }
+            if(args[0].equals("Ej2")){
+                validArgs=true;
+                base=3;
             }
         }
         
@@ -133,29 +130,23 @@ public class Mochila_01
             {
                 System.out.println("---------- Ejecucion "+ejec+" ----------\n");
 
-                SEMILLA = args.length > argSemilla ? Long.parseLong(args[argSemilla]): 
+                SEMILLA = args.length > 1 ? Long.parseLong(args[1]): 
                                              (long) (10000.0 * Math.random() + 1);
                 
                 //Parámetros de generación
                 N = 10;
                 CAPACIDAD = 20.0;
-                base  = 2;
                 PESO_MIN = 0.5;
                 PESO_MAX = 4.5;
                 VAL_MIN  = 1000.0;
                 VAL_MAX  = 2500.0;
 
-                pesos   = new double[N*nVeces];
-                valores = new double[N*nVeces];
+                pesos   = new double[N];
+                valores = new double[N];
 
-                //Se permite nVeces cada artículo
-                for(int rep=0; rep<nVeces; rep++){
-                    rnd = new java.util.Random(SEMILLA);
-                    genPesosYValores(rnd,N,pesos,valores, PESO_MIN,PESO_MAX,VAL_MIN,VAL_MAX, rep*N);
-                }
-                N *= nVeces;
-
-                
+                //Se permite hasta base-1 veces cada artículo
+                rnd = new java.util.Random(SEMILLA);
+                genPesosYValores(rnd,N,pesos,valores, PESO_MIN,PESO_MAX,VAL_MIN,VAL_MAX);
                 card  = (int) Math.pow((double)base,(double)N);
 
                 //Mejores soluciones
@@ -188,11 +179,8 @@ public class Mochila_01
                        
                        // Si la sol no fue menor que todos en el arreglo, desplazamos un lugar abajo las soluciones con menor valor y agregamos la actual
                        if (i != sols.length){
-                           // En caso de que estemos evaluando artículos con clones, verificamos que no sea reflexión
-                           if(nVeces<2 || i==0 || sols[i-1].esEquivalente(sol)){
-                               desplazaDerechaDesde(sols, i);
-                               sols[i] = sol;
-                           }
+                           desplazaDerechaDesde(sols, i);
+                           sols[i] = sol;
                        }
                    }
 
