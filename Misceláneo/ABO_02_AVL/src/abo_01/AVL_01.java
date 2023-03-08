@@ -24,6 +24,7 @@ public class AVL_01
         
         int numNodos_Nivel[] = new int[altura];
         double  dens_Nivel[] = new double[altura];
+        double cotas[] = abo.cotasParaCompactado();
         
         abo.obtenNodosPorNivel(numNodos_Nivel);
         
@@ -32,7 +33,9 @@ public class AVL_01
                dens_Nivel[nivel] = 100.0 * ((double)(numNodos_Nivel[nivel]) / Math.pow(2.0,nivel));
                System.out.println("Nivel[" + String.format("%3d",(nivel+1)) + "]:" + 
                                              String.format("%3d",numNodos_Nivel[nivel]) + " nodos, densidad: " + 
-                                             String.format("%6.2f",dens_Nivel[nivel])+"%");
+                                             String.format("%6.2f",dens_Nivel[nivel])+"%, cota para ser compacto: "+
+                                             String.format("%6.2f", cotas[nivel])+"%"
+               );
         }
     }
     
@@ -50,6 +53,7 @@ public class AVL_01
         int x;
         
         Cls_AVL abo = new Cls_AVL();
+        Cls_AVL aboComp = new Cls_AVL();
         
         for( int i = 0; i < N; i++)
         {
@@ -105,8 +109,9 @@ public class AVL_01
         System.out.println();
         reportaArbol(abo);
         System.out.println("\nViene lo bueno:");
-        reportaArbol(abo.compactado());
-    
+        aboComp = abo.compactado();
+        reportaArbol(aboComp);
+        
     }
     
 }

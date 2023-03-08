@@ -171,6 +171,20 @@ public class Cls_AVL
         return avl;
     }
     
+    //Solo para compactado
+    public double[] cotasParaCompactado (){
+        double[] cotas;
+        int altura;
+        
+        altura = this.altura();
+        cotas = new double[altura];
+        
+        for (int i=0; i<altura-1; i++)
+            cotas[i]=100;
+        cotas[altura-1]=100.0/Math.pow(2.0, altura-1);
+        return cotas;
+    }
+    
     @Override
     public String toString()
     {
