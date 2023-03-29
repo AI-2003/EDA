@@ -4,6 +4,8 @@
 #                                Utilerías Generales
 # =============================================================================
 import sys
+import time
+import datetime
 
 cadsep = "=" * 60
 
@@ -16,8 +18,35 @@ def salir(strLetrero):
     letrero(strLetrero)
     sys.exit()	
 # =============================================================================
-#                                Clase de la Contabilidad
+#   Asigne su CU y nombre como cadenas de caracteres
 # =============================================================================
+CU     = '201598'
+NOMBRE = 'IBARRARAN ARNALDO CARLOS ARMANDO'
+
+def print_id():
+    global CU
+    global NOMBRE
+    print(cadsep)
+    print('CU:' + CU + ' ... ' + NOMBRE)
+    print(cadsep)
+
+def progMateriaNombre():
+   str_dateTime   = datetime.datetime.now().strftime('%d-%m-%Y %H:%M:%S')
+   print(cadsep)
+   print('         COM-11103 Estructuras de Datos Avanzadas')
+   print('              semestre enero - mayo 2023, Gpo 02')
+   print('                 Segundo Examen Parcial')
+   print(' '*18 + str_dateTime)
+   print_id()
+
+# =============================================================================
+#                                Clases de la Contabilidad
+# =============================================================================
+	
+# -----------------------------------------------------------------------------
+#                                Contabilidad
+# -----------------------------------------------------------------------------
+
 class Contabilidad:
     def __init__(self,ejer,nombre):
         self.ejercicio = ejer
@@ -28,8 +57,10 @@ class Contabilidad:
         self.colPartes[3] = ParteContable(3,"Capital ","A")
         self.colPartes[4] = ParteContable(4,"Ingresos","A")
         self.colPartes[5] = ParteContable(5,"Egresos ","D")
-        
-        
+        self.colPolizas = {} 
+#
+# -----------------------------------------------------------------------------
+#      
     def altaCta(self,id_cta,nomCta,natCta):
         #print("Se va a dar de alta la cuentaT:" +
         #      str(id_cta) + " " + nomCta + " (" + natCta + ")")
@@ -45,9 +76,18 @@ class Contabilidad:
               raise Exception("la cta " + str(id_cta) + " ya existe")  
             else:
               self.colPartes[idParte].altaCta(id_cta,nomCta,natCta)  
-
+#
+# -----------------------------------------------------------------------------
+#      
     def registraPoliza(self,pol):
         blnRes = True
+        #
+        #   verificamos que no exista esa póliza
+        #
+        if self.colPolizas.get(pol.idPoliza) != None:
+            raise Exception("La póliza " + str(pol.idPoliza) + " ya existe")
+
+
         #
         #   verificamos que la póliza esté cuadrada
         #
@@ -79,8 +119,13 @@ class Contabilidad:
             print("Alguna de las cuentas no existe") 
             return False
         #
-        #  Todo bien, regisreamos los movimientos de la póliza
+        #  Todo bien, regisreamos la póliza y los movimientos de la póliza
         #
+
+        # Agregamos la póliza
+        self.colPolizas[pol.idPoliza] = pol
+
+        # Agregamis sus movtos
         for m in pol.colMovtos:
             cta = m.numCta
             idParte = cta // 100000
@@ -88,6 +133,9 @@ class Contabilidad:
         
         return blnRes
     
+#
+# -----------------------------------------------------------------------------
+#      
     def ecuacion(self):
         saldo_activo   = self.colPartes[1].saldo()
         saldo_pasivo   = self.colPartes[2].saldo()
@@ -115,75 +163,80 @@ class Contabilidad:
         strRes += "*" * 43 + '\n'
         return strRes
     
-    def balance(self):
-        saldo_activo   = self.colPartes[1].saldo()
-        saldo_pasivo   = self.colPartes[2].saldo()
-        saldo_capital  = self.colPartes[3].saldo()
+#
+# -----------------------------------------------------------------------------
+#      
+    def edoRes(self):
+        strRes = "Estado de Resultado:"  + '\n'
+        strRes += str(self.colPartes[4]) + '\n'
+        strRes += str(self.colPartes[5]) + '\n'
+        
         saldo_ingresos = self.colPartes[4].saldo()
         saldo_egresos  = self.colPartes[5].saldo()
         
-        if saldo_egresos.tipo == "C":
-            saldo_egresos.tipo = "A"
-            saldo_egresos.monto *= -1
-        
-        if saldo_activo.monto != (saldo_pasivo.monto + saldo_capital.monto + saldo_ingresos.monto + saldo_egresos.monto):
-            raise Exception("La ecuación no está balanceada")
-
+        saldo_egresos.tipo = "A"
+        saldo_egresos.monto *= -1
+    
         strRes = "*" * 43  + '\n'
-
-        strRes += " "*8 + "Activo "+ " "*8 +"="+ " "*10 +"Pasivo"+ " "*8 +"+"+ " "*9 +"Capital"+ " "*8 +"+"+ " "*8 +"Ingresos"+" "*8+"-"+" "*9+"Egresos \n"
-
-        strRes += "{:15,.2f}".format(saldo_activo.monto) + " "*7 + " = " \
-            + "{:15,.2f}".format(saldo_pasivo.monto) + " "*7 + " + "  \
-            + "{:15,.2f}".format(saldo_capital.monto) + " "*7 + " + " \
-            + "{:15,.2f}".format(saldo_ingresos.monto) + " "*7 + " - " \
-            + "{:15,.2f}".format(-1*saldo_egresos.monto) + " "*7 + "\n"
-
-        strRes += "{:15,.2f}".format(saldo_activo.monto) + " "*7 + " = " \
-            + "{:15,.2f}".format(saldo_pasivo.monto + saldo_capital.monto + saldo_ingresos.monto + saldo_egresos.monto) + "\n"
-
+        
+        strRes += str(saldo_ingresos) + '\n'
+        strRes += str(saldo_egresos ) + '\n'
+        strRes += "-" * 43 + '\n' 
+        
+        strRes += " " * 30 
+        strRes +=  "{:12,.2f}".format(saldo_ingresos.monto +
+                                      saldo_egresos.monto) + '\n'
         strRes += "*" * 43 + '\n'
-        return strRes
-    
-
-    def resultados(self):
-        saldo_ingresos = self.colPartes[4].saldo()
-        saldo_egresos = self.colPartes[5].saldo()
-
-        strRes = "*" * 43 + "\n"
-
-        strRes += str(saldo_ingresos) + "\n" \
-            + str(saldo_egresos) + "\n" \
-            + "=" *30 + "\n" \
-            + "  Utilidad" + " " * 12 + "     " + "{:15,.2f}".format(saldo_ingresos.monto-saldo_egresos.monto) + "\n"
-
-        strRes += "*" * 43 + "\n"
-
-        return strRes
-
-
-
-
+        return strRes   
+#
+# -----------------------------------------------------------------------------
+#      
     def cierre(self):
-        cierrId = 300100
-
-        # Verificamos existencia e inicializamos
-        if not self.colPartes[3].existeCta(cierrId):
-            self.colPartes[3].altaCta(cierrId, "Resultado del Ejercicio", "A")
-        polCierr = PolizaContable(1, "Cierre de cuentas", self.ejercicio*1000+3112)
-
-        # Recorremos las cuentas
-        for cta in (self.colPartes[4].ColCtas |  self.colPartes[5].ColCtas).values() :
-            monto = cta.saldo().monto
-            if cta.nat == "A":
-                polCierr.abono(cierrId, monto)
-                polCierr.cargo(cta.numCta, monto)
-            else:
-                polCierr.cargo(cierrId, monto)
-                polCierr.abono(cta.numCta, monto)
-        return self.registraPoliza(polCierr)
-            
+        id_cta_cierre = 300100
+        if not self.colPartes[3].existeCta(id_cta_cierre):
+             self.altaCta(id_cta_cierre, "Resultado del Ejercicio", "A")
+             
+        pol_cierre = PolizaContable(self.ejercicio*10000,"Póliza de Cierre",20231231)     
+        
+        self.colPartes[4].saldaCtas(pol_cierre,id_cta_cierre)
+        self.colPartes[5].saldaCtas(pol_cierre,id_cta_cierre)    
     
+        blnRes = self.registraPoliza(pol_cierre)
+
+        #Reconocimiento de adeudo
+        if blnRes:
+            utilidad = self.colPartes[3].ColCtas[id_cta_cierre].saldo().monto
+            if utilidad > 0:
+
+                # Verificamos existencia de cuenta de ISR por pagar
+                id_cta_adeudo = 200200
+                if not self.colPartes[2].existeCta(id_cta_adeudo):
+                    self.altaCta(id_cta_adeudo, "ISR por Pagar", "A")
+                
+                # Disminución de utilidad y aumento de ISR por pagar
+                pol_adeudo = PolizaContable(self.ejercicio*10000+1, "Póliza de Adeudo", 20231231)
+                pol_adeudo.abono(id_cta_adeudo, utilidad*0.3)
+                pol_adeudo.cargo(id_cta_cierre, utilidad*0.3)
+                blnRes = blnRes and self.registraPoliza(pol_adeudo)
+
+        return blnRes
+
+#
+# -----------------------------------------------------------------------------
+#  
+
+    def imprimePolizas(self):
+        
+        strRes = "\n                        Pólizas\n"
+        strRes += "="*60 + "\n" 
+        for pol in self.colPolizas.values():
+            strRes += str(pol) + "\n" + "=" * 30 + "\n"
+        print(strRes)
+        
+
+#
+# -----------------------------------------------------------------------------
+#      
     def __str__(self):
         strRes = str(self.nombre) + " " + str(self.ejercicio) + "\n"
         
@@ -191,6 +244,9 @@ class Contabilidad:
           strRes += str(self.colPartes[k])
         return strRes
         
+# -----------------------------------------------------------------------------
+#                               ParteContable
+# -----------------------------------------------------------------------------
               
 class ParteContable:
     def __init__(self,idParte,nombre,nat):
@@ -199,20 +255,32 @@ class ParteContable:
         self.nat       = nat
         self.ColCtas   = {}
 
+#
+# -----------------------------------------------------------------------------
+#      
     def existeCta(self,idCta):
         return self.ColCtas.get(idCta) != None
         
     
+#
+# -----------------------------------------------------------------------------
+#      
     def altaCta(self,id_cta,nomCta,natCta):
         #print("Parte conta:"+str(self.id) +
         #      " Se va a dar de alta la cuentaT:" +
         #      str(id_cta) + " " + nomCta + " (" + natCta + ")")
         self.ColCtas[id_cta] = CuentaContable(id_cta,nomCta,natCta)
 
+#
+# -----------------------------------------------------------------------------
+#      
     def registraMovto(self,movto):
         cta = movto.numCta
         self.ColCtas[cta].registraMovto(movto)
 
+#
+# -----------------------------------------------------------------------------
+#      
     def saldo(self):
         sc = 0
         sa = 0
@@ -230,7 +298,23 @@ class ParteContable:
             movto_saldo = MovtoContable("A",strLetrero,sa-sc)
         return movto_saldo  
         
-        
+#
+# -----------------------------------------------------------------------------
+#      
+    def saldaCtas(self,pol_cierre, id_cta_cierre):
+        for cta in self.ColCtas.values():
+                saldo_cta = cta.saldo()
+                if saldo_cta.tipo == "C":
+                   pol_cierre.cargo(id_cta_cierre,saldo_cta.monto)
+                   pol_cierre.abono(cta.numCta,   saldo_cta.monto)
+                else:
+                   pol_cierre.abono(id_cta_cierre,saldo_cta.monto)
+                   pol_cierre.cargo(cta.numCta,   saldo_cta.monto)
+                         
+    
+#
+# -----------------------------------------------------------------------------
+#      
     def __str__(self):
         strRes = str(self.id) + " ... " + \
                  self.nombre + " (" + self.nat + ")\n"
@@ -240,7 +324,11 @@ class ParteContable:
         strRes += str(self.saldo()) + '\n'
         strRes += "=" * 30 + '\n'         
         return strRes
-        
+
+# -----------------------------------------------------------------------------
+#                              CuentaContable
+# -----------------------------------------------------------------------------
+
 class CuentaContable:
     def __init__(self,idCta,nombre,nat):
         self.numCta    = idCta
@@ -248,9 +336,15 @@ class CuentaContable:
         self.nat       = nat
         self.ColMovtos = []
     
+#
+# -----------------------------------------------------------------------------
+#      
     def registraMovto(self,movto):
         self.ColMovtos.append(movto)
         
+#
+# -----------------------------------------------------------------------------
+#      
     def saldo(self):
         sc = 0
         sa = 0
@@ -265,6 +359,9 @@ class CuentaContable:
             movto_saldo = MovtoContable("A",self.numCta,sa-sc)
         return movto_saldo    
         
+#
+# -----------------------------------------------------------------------------
+#      
     def __str__(self):
         strRes = str(self.numCta) + " ... " + \
                  self.nombre + " (" + self.nat + ")\n"
@@ -274,6 +371,9 @@ class CuentaContable:
         strRes += str(self.saldo()) + '\n'
         strRes += "-" * 25 + '\n'
         return strRes    
+# -----------------------------------------------------------------------------
+#                                PolizaContable
+# -----------------------------------------------------------------------------
 
 class PolizaContable:
     def __init__(self,id,desc,intFecha):
@@ -282,14 +382,23 @@ class PolizaContable:
         self.fecha       = intFecha
         self.colMovtos   = []
         
+#
+# -----------------------------------------------------------------------------
+#      
     def cargo(self,idCta,monto):
         m = MovtoContable("C", idCta, monto)
         self.colMovtos.append(m)
         
+#
+# -----------------------------------------------------------------------------
+#      
     def abono(self,idCta,monto):
         m = MovtoContable("A", idCta, monto)
         self.colMovtos.append(m)
         
+#
+# -----------------------------------------------------------------------------
+#      
     def __str__(self):
         strRes = "Poliza " + str(self.idPoliza) + " " + \
                  self.descripcion + " " + str(self.fecha) + "\n"
@@ -297,12 +406,19 @@ class PolizaContable:
             strRes += str(m) + "\n"
         return strRes
 
+# -----------------------------------------------------------------------------
+#                                MovtoContable
+# -----------------------------------------------------------------------------
+
 class MovtoContable:
     def __init__(self,tipo,numCta,monto):
         self.tipo   = tipo
         self.numCta = numCta
         self.monto  = monto
 
+#
+# -----------------------------------------------------------------------------
+#      
     def __str__(self):
          strRes = "(" + self.tipo + ") " + str(self.numCta)
          if self.tipo == "A":
@@ -313,7 +429,10 @@ class MovtoContable:
 # =============================================================================
 #                                Script principal
 # =============================================================================
-
+progMateriaNombre()
+#
+# -----------------------------------------------------------------------------
+#
 conta = Contabilidad(2023, "MiEmpre S.A.")
 
 conta.altaCta(100100,"Bancos               ","D")
@@ -323,10 +442,8 @@ conta.altaCta(300000,"Capital              ","A")
 conta.altaCta(400100,"Ventas               ","A")
 conta.altaCta(500100,"Costo de lo Vendido  ","D")
 
-
 print(cadsep)
 #print(conta)
-
 
 pol1 = PolizaContable(1,"Constitución de la Empresa",20190121)
 pol1.cargo(100100,10000)
@@ -356,99 +473,112 @@ print(conta)
 print(conta.ecuacion())
 
 # =============================================================================
-#    Ejercicio 1) Balance contable:
+# [3.0]   Ejercicio 1) Agregar el reconocimiento del adeudo del ISR
 '''
-     Obtener el reporte del balance contable y verificar que 
-     
-     "Activo = Pasivo + Capital + Ingresos - Egresos"
-     
-     Para ello, se debe de obtener el saldo de cada una de las partes:
-
-         3.1)   El saldo de la Parte es un movimiento contable según la
-                "naturaleza" o "tipo" de la Parte:
-                 Tipo                          saldo   
-               Deudora                  cargo con Suma de saldos de Ctas Deudoras - 
-                                                  Suma de saldos de Ctas Acreedoras
-               
-               Acreedora                abono con Suma de saldos de Ctas Acreedoras - 
-                                                  Suma de saldos de Ctas Deudoras
-
-              Asimismo, el Saldo de las Cuentas Contables va de acuerdo al "tipo" de 
-              Cuenta y con los movimientos de cargo y abono de la cuenta:
-                 Tipo                          saldo   
-               Deudora                  cargo con Suma de cargos- 
-                                                  Suma de abonos
-               
-               Acreedora                abono con Suma de abonos - 
-                                                  Suma de cargos
-      
-        3.2) Implemente cada uno de los saldos requeridos y agregue la salida
-             en el reporte de la contabilidad.
-          
-'''
-
-# =============================================================================
-#      Ejercicio 2) Estado de Resultados
-'''
-        Obtener un reporte con el estado de resultados:
-            Ingresos - Egresos
-            Reportando el saldo de cada una de las cuentas
-'''
-
-# =============================================================================
-
-
-
-
-# =============================================================================
-#      Ejercicio 3) Cierre contable
-'''
-    Ejecutar la operación del cierre contable.
-    El cierre contable consiste en "pasar" el efecto de cada una de las 
-    cuentas de Ingresos y Egresos a la cuenta de Resultado del Ejercicio y
-    dejando "en ceros" las cuentas de Ingresos y Egresos.
-    Para ello (desde la misma Contabilidad):
-        3.1) Verificar la existencia de la cuenta 
-                  300100 Resultado del Ejercicio (A))
-             en caso de no existir darla de alta.
-        3.2) Crear la Póliza de Cierre
-        3.3) Para cada una de las cuentas de Ingresos y Egresos
-             Obtener el saldo de la cuenta y agregarlo con el tipo dado por el saldo
-             a la póliza de cierre a la cta 300100
-             agregar a la póliza de cierre un "contra movimiento" a la misma cuenta
-             de donde se obtuvo el saldo.
-       3.4)  Registrar en la contabilidad la póliza de cierre.      
-'''
-
-
-
-# =============================================================================
-
-# =============================================================================
-#      Ejercicio 4) Poliza para pasivo por ISR
-'''
-     En caso de haber utilidad (Saldo de la cuenta 300100 es un abono) se debe
+     En el proceso del cierre contable,
+     en caso de haber utilidad (Saldo de la cuenta 300100 es un abono o esta
+                                cuenta tiene saldo positivo ),
      generar una póliza con el 30% de la utilidad como adeudo a la cuenta 
-                 200100 ISR por Pagar (A)
+                 200200 ISR por Pagar (A)
      y un cargo a la cuenta
                  300100 para disminuir la cantidad de la utilidad posterior
     al ISR.
-     
+                 
+'''    
+# =============================================================================
+# [4.0]     Ejercicio 2) Agregar a la contabilidad la colacción de pólizas,
 '''
+                    El id de la póliza es el número de póliza.
+                    La póliza de cierre tiene como id Ejercicio * 10,000
+                    La contabilidad debe verificar que no haya pólizas repetidas.
+'''
+# =============================================================================
+# =============================================================================
+#  [3.0]    Ejercicio 3) Proceso de generación de pólizas de ventas
+'''
+             [2.0] Elabore un proceso que genere pólizas de ventas con valores
+                   del costo de lo vendido entre c_min y c_max y valor de la venta 
+                   un 25%  y 35% del costo de lo vendido.
+                   La rutina para generar valores aleatorios se proporciona a
+                   continuación
+                   
+                   El uso que debe tener es
+                   
+                   pol_vta = genPolVta(id_pol,c_min,c_max)
+                   
+                   ej:
+                       
+                  pol_vta = genPoliza(25, 250.0, 400.0)
+                  
+             [1.0] Agregue el código para el uso por medio de un for adecuado
+                  y posteriormente haga el cierre.
+                  
+                  ¿Qué ocurre con el inventario?
+
+'''
+
+
+# =============================================================================
+import random
+def iniciaAleat(SEMILLA):
+    random.seed(SEMILLA)
+    
+def proxValor(valMin,valMax):
+    
+    return float("{:.2f}".format(0.05*float(int(100*random.uniform(valMin,valMax)+4)//5)))
+
+# =============================================================================
+
+
+# Generación y registro de pólizas
+# =============================================================================
+
+def genPolVta(id_pol, c_min, c_max):
+        # Se genera el costo, el valor de venta y la fecha de venta
+        costo = proxValor(c_min, c_max)
+        valorVenta = costo * proxValor(0.25, 0.35)
+        fechaVenta = int(proxValor(20190201, 20190228))
+
+        # Se hace los mvtos
+        polVenta = PolizaContable(id_pol, "Venta aleatoria " + str(i), fechaVenta)
+        polVenta.abono(100200, costo)
+        polVenta.cargo(500100, costo)
+        polVenta.abono(400100, valorVenta)
+        polVenta.cargo(100100, valorVenta)
+        return polVenta
+
+
+numPolizas = 3
+for i in range(numPolizas):
+    c_min = int(proxValor(100,1000))
+    pol_i = genPolVta(100+i, c_min, c_min + proxValor(100, 300))
+    conta.registraPoliza(pol_i)
+
 
 
 
 # =============================================================================
 
+print(cadsep + '\n')
+print("              Balance")
+print(conta.ecuacion())
+print(cadsep + '\n')
+print("           Estado de Resultados")
+print(conta.edoRes())
+print(cadsep + '\n')
 
-
-
+conta.cierre()
+print("              Balance post cierre")
 print(cadsep)
-print(conta.balance())
+print(conta)
 print(cadsep)
-print(conta.resultados())
+print(cadsep)
 
-print(conta.cierre())
-print(str(conta))
+conta.imprimePolizas()
+
+progMateriaNombre()
+
 #
 # ========================== FIN DEL SCRIPT PRINCIPAL =====================
+
+
