@@ -28,7 +28,19 @@ class EstructuraTopo:
         self.colNodos = {}
 
     def agrega(self, strAnt, strSuc):
-        pass
+
+        nodoAnt = self.colNodos.get(strAnt)
+        nodoSuc = self.colNodos.get(strSuc)
+
+        if nodoAnt == None:
+            nodoAnt = NodoTopo(strAnt)
+            self.colNodos[strAnt] = nodoAnt
+        if nodoSuc == None:
+            nodoSuc = NodoTopo(strSuc)
+            self.colNodos[strSuc] = nodoSuc
+
+        nodoAnt.colSucesores.append(nodoSuc)
+        nodoSuc.num_antecesores += 1
     
     def ordenaT(self):
         pass
@@ -53,7 +65,7 @@ class NodoTopo:
     def __init__ (self, strId):
         self.id = strId
         self.num_antecesores = 0
-        self.colSucesores = {}
+        self.colSucesores = []
 
     def __str__ (self):
         strRes = "NodoTopo " + str(self.id) + "\n"
