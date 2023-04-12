@@ -26,6 +26,7 @@ class EstructuraTopo:
 
     def __init__(self):
         self.colNodos = {}
+        self.nodosOrd = []
 
     def agrega(self, strAnt, strSuc):
 
@@ -43,7 +44,20 @@ class EstructuraTopo:
         nodoSuc.num_antecesores += 1
     
     def ordenaT(self):
-        pass
+        while len(self.colNodos) > 0:
+            for n in self.colNodos.values():
+                if n.num_antecesores == 0:
+                    break
+            if n.num_antecesores == 0:
+                for nod in n.colSucesores:
+                    nod.num_antecesores -= 1
+                self.nodosOrd.append(n)
+                self.colNodos.pop(n.id)
+            else:
+                raise Exception("It´s a loop!")
+                
+                
+
 
     def __str__(self):
         strRes = "EstructuraTopo\n"
