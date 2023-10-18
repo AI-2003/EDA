@@ -10,12 +10,14 @@ Created on Mon Apr 17 13:40:53 2023
 import random
 
 class Nodo:
-    def __init__(self, valor, nivel):
-        self.valor = valor # Valor almacenado en el nodo
+    def __init__(self, indx, nivel, valor=None):
+        self.indx = indx # indx almacenado en el nodo
         self.siguiente = [None] * (nivel + 1) # Lista de punteros al siguiente nodo en cada nivel
+        self.lista = SkipList(nivel, 0.5)
+        self.valor = valor
         
     def __str__(self):
-       strRes = "Nodo:" + str(self.valor)
+       strRes = "Nodo:" + str(self.indx)
        return strRes
 
 # Clase para representar una skip list
@@ -26,9 +28,9 @@ class SkipList:
         self.cabeza = self.crear_nodo(None, max_level) # Nodo ficticio que actúa como cabeza de la lista
         self.nivel = 0 # Nivel actual de la lista
 
-    # Función para crear un nuevo nodo con un valor y un nivel dados
-    def crear_nodo(self, valor, nivel):
-        return Nodo(valor, nivel)
+    # Función para crear un nuevo nodo con un indx y un nivel dados
+    def crear_nodo(self, indx, nivel):
+        return Nodo(indx, nivel)
 
     # Función para generar un nivel aleatorio para un nuevo nodo
     def nivel_aleatorio(self):
@@ -39,25 +41,25 @@ class SkipList:
         return nivel
 
     # Función para insertar un nuevo elemento en la lista
-    def insertar(self, valor):
+    def insertar(self, indx):
         actual = self.cabeza # Nodo actual que recorre la lista
         actualizado = [None] * (self.max_level + 1) # Lista de nodos que deben ser actualizados después de la inserción
 
         # Buscar la posición adecuada para insertar el nuevo nodo
         for i in range(self.nivel, -1, -1):
-            while actual.siguiente[i] and actual.siguiente[i].valor < valor:
+            while actual.siguiente[i] and actual.siguiente[i].indx < indx:
                 actual = actual.siguiente[i]
             actualizado[i] = actual # Guardar el nodo anterior al nuevo nodo en cada nivel
 
         actual = actual.siguiente[0] # Moverse al siguiente nodo del nivel más bajo
 
-        # Si el valor ya existe en la lista, no hacer nada
-        if actual and actual.valor == valor:
-            return
+        # Si el indx ya existe en la lista, no hacer nada
+        if actual and actual.indx == indx:
+            return actual
 
-        # Si el valor no existe, crear un nuevo nodo con un nivel aleatorio
+        # Si el indx no existe, crear un nuevo nodo con un nivel aleatorio
         nivel_nuevo = self.nivel_aleatorio()
-        nuevo_nodo = self.crear_nodo(valor, nivel_nuevo)
+        nuevo_nodo = self.crear_nodo(indx, nivel_nuevo)
 
         # Si el nivel del nuevo nodo es mayor que el nivel actual de la lista, actualizar el nivel de la lista y la lista de nodos actualizados
         if nivel_nuevo > self.nivel:
@@ -70,39 +72,41 @@ class SkipList:
             nuevo_nodo.siguiente[i] = actualizado[i].siguiente[i]
             actualizado[i].siguiente[i] = nuevo_nodo
 
+        return nuevo_nodo
+
     # Función para buscar un elemento en la lista
-    def buscar(self, valor):
+    def buscar(self, indx):
         actual = self.cabeza # Nodo actual que recorre la lista
 
         # Buscar el elemento desde el nivel más alto al más bajo
         for i in range(self.nivel, -1, -1):
-            while actual.siguiente[i] and actual.siguiente[i].valor < valor:
+            while actual.siguiente[i] and actual.siguiente[i].indx < indx:
                 actual = actual.siguiente[i]
 
         # Moverse al siguiente nodo del nivel más bajo
         actual = actual.siguiente[0]
 
         # Si el elemento existe en la lista, devolverlo. Si no, devolver None.
-        if actual and actual.valor == valor:
-            return actual.valor
-        else:
-            return None
+        res = None
+        if actual and actual.indx == indx:
+            res = Nodo(actual)
+        return res
 
-    # Elimina un valor
-    def eliminar(self, valor):
+    # Elimina un indx
+    def eliminar(self, indx):
         actual = self.cabeza # Nodo actual que recorre la lista
         actualizado = [None] * (self.max_level + 1) # Lista de nodos que deben ser actualizados después de la eliminación
 
         # Buscar la posición del nodo que se va a eliminar
         for i in range(self.nivel, -1, -1):
-            while actual.siguiente[i] and actual.siguiente[i].valor < valor:
+            while actual.siguiente[i] and actual.siguiente[i].indx < indx:
                 actual = actual.siguiente[i]
             actualizado[i] = actual # Guardar el nodo anterior al nodo eliminado en cada nivel
 
         actual = actual.siguiente[0] # Moverse al siguiente nodo del nivel más bajo
 
-        # Si el valor existe en la lista, eliminarlo
-        if actual and actual.valor == valor:
+        # Si el indx existe en la lista, eliminarlo
+        if actual and actual.indx == indx:
             # Conectar los nodos anteriores y siguientes en cada nivel
             i == 0
             while i<=self.nivel and actualizado[i].siguiente[i] == actual:
@@ -113,9 +117,9 @@ class SkipList:
             while self.nivel > 0 and not self.cabeza.siguiente[self.nivel]:
                 self.nivel -= 1
 
-            return valor # El valor se encontró y se eliminó
+            return indx # El indx se encontró y se eliminó
 
-        return None # El valor no se encontró
+        return None # El indx no se encontró
 
 
 
