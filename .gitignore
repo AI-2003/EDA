@@ -13,3 +13,5 @@ data_*/
 #Private
 private/
 /Web/MiSitioWeb/build/
+/Web/TestProject/target/
+/Web/TestProject/build/
